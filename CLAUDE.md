@@ -33,6 +33,69 @@ Chrome/Firefox extension. Passive logger for network + runtime errors.
 
 ## Architecture
 
+```mermaid
+flowchart LR
+  subgraph Page["Webpage (tab)"]
+    direction TB
+    PageJS["Page JS<br/>(MAIN world)"]
+    Main["runtime-main<br/>content (MAIN)<br/>error + rejection<br/>listeners"]
+    Bridge["runtime-bridge<br/>content (ISOLATED)"]
+    Overlay["overlay content<br/>(ISOLATED, doc_start)<br/>Shadow DOM<br/>+ pub/sub buffer"]
+    Toast(["Toast queue<br/>React in shadow root"])
+    PageJS -- "throw / reject" --> Main
+    Main -- "postMessage<br/>+ marker" --> Bridge
+    Overlay --- Toast
+  end
+
+  Net[("Browser network<br/>response &ge; 400")]
+
+  subgraph BG["Background service worker"]
+    direction TB
+    WR["webRequest.onCompleted"]
+    Msg["runtime.onMessage<br/>(RuntimePayload)"]
+    Push["pushError + cap 20"]
+    Notify["notifyTab<br/>tabs.sendMessage"]
+    WR --> Push
+    Msg --> Push
+    Push --> Notify
+  end
+
+  subgraph Store["chrome.storage.local"]
+    Errors[("errors[]")]
+    Sett[("settings")]
+  end
+
+  subgraph UI["Extension pages"]
+    direction TB
+    Popup["Popup<br/>toggle, theme,<br/>position, list"]
+    History["History page<br/>cards + Clear"]
+  end
+
+  Net --> WR
+  Bridge -- "runtime.sendMessage" --> Msg
+  Notify -. "ShowToastMessage" .-> Overlay
+
+  Push --> Errors
+  Sett -. "read per event<br/>(monitoring guard)" .-> WR
+  Sett -. "read per event<br/>(monitoring guard)" .-> Msg
+
+  Errors -. "watch" .-> Popup
+  Errors -. "watch" .-> History
+  Sett -. "watch" .-> Popup
+  Sett -. "watch" .-> History
+  Sett -. "watch (position)" .-> Overlay
+
+  Popup -- "setSettings" --> Sett
+  History -- "clearErrors" --> Errors
+```
+
+**Reading the diagram:**
+- Solid arrows = direct call / network response.
+- Dashed arrows = observation (storage watch) or async message delivery.
+- Two capture entrypoints (`webRequest` for network, `runtime.onMessage` for runtime) converge into one `pushError`.
+- Storage is the source of truth for UI; toasts are pushed directly to the tab (not derived from storage watch — see slice 5 design note).
+- `Sett` (settings) gates capture in the background and parametrises rendering everywhere.
+
 ```
 entrypoints/
   background.ts                    # webRequest + runtime.onMessage handlers,
