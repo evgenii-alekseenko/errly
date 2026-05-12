@@ -4,7 +4,17 @@ import {
   type ErrorRecord,
   RUNTIME_MESSAGE_MARKER,
   type RuntimePayload,
+  type ShowToastMessage,
 } from '@/lib/types';
+
+async function notifyTab(tabId: number, record: ErrorRecord): Promise<void> {
+  const message: ShowToastMessage = { type: 'show-toast', record };
+  try {
+    await browser.tabs.sendMessage(tabId, message);
+  } catch {
+    // Tab might be closed or have no content script (e.g. chrome:// pages).
+  }
+}
 
 async function isActiveTab(tabId: number | undefined): Promise<boolean> {
   if (tabId === undefined || tabId < 0) return false;
@@ -31,6 +41,7 @@ export default defineBackground(() => {
         url: details.url,
       };
       await pushError(record);
+      await notifyTab(details.tabId, record);
     },
     { urls: ['<all_urls>'] },
   );
@@ -50,5 +61,6 @@ export default defineBackground(() => {
       stack: payload.stack,
     };
     await pushError(record);
+    if (sender.tab?.id !== undefined) await notifyTab(sender.tab.id, record);
   });
 });

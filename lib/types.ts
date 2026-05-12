@@ -30,3 +30,8 @@ export type RuntimePayload = {
   source: string;
   stack?: string;
 };
+
+export type ShowToastMessage = {
+  type: 'show-toast';
+  record: ErrorRecord;
+};
