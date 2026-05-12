@@ -27,7 +27,9 @@ Chrome/Firefox extension. Passive logger for network + runtime errors.
 5. ✅ Shadow-DOM toast overlay on originating tab
 6. ✅ Theme (light/dark/system) + notification position
 6.5. ✅ Capture network-level failures (`onErrorOccurred`) — `ERR_CONNECTION_REFUSED`, DNS, TLS
-7. Filters + colors + search (Zustand starts paying off)
+7a. ✅ Code filters (groups + 9 codes) — display-only, runtime always shown
+7b. Per-code colors → toast/card stripes
+7c. Search-text + type filter in history
 8. Detail page (introduces ReactRouter)
 9. Screenshot / test-error / copy-last buttons
 10. Report templates (JSON + Jira URL, Strategy pattern)
@@ -123,7 +125,9 @@ lib/
   storage.ts                       # errors storage (get/push/clear/watch)
   cap.ts                           # pure: appendCapped (Jest-testable)
   format.ts                        # pure: networkLabel (statusCode || stripped errorText)
-  settings.ts                      # Settings (monitoring, theme, notificationPosition)
+  filter.ts                        # pure: shouldShowRecord (codeFilters logic)
+  settings.ts                      # Settings (monitoring, theme, position, codeFilters)
+                                   # withDefaults merge for forward-compat reads
   toast-store.ts                   # module-level pub/sub for toasts (race-proof)
   use-settings.ts                  # React: useSettings, useEffectiveTheme, ThemeApplier
   theme.css                        # shared CSS variables for light/dark via [data-theme]
@@ -162,6 +166,9 @@ tests/
 - Controlled inputs that write to async storage need **optimistic local update** in `onChange` (storage.watch is too slow for Playwright's `.check()` polling).
 - Theme via `data-theme` attribute on `<html>` + CSS variables in `lib/theme.css`. Both popup and history import.
 - `useEffectiveTheme` resolves `'system'` via `prefers-color-scheme` matchMedia.
+- Filters are **display-only**: storage holds everything captured, popup/history render via `shouldShowRecord`. Toast on-page is not filtered — toast = "this just happened" signal independent of saved-view filters.
+- Group buttons (`All 4XX`/`All 5XX`) are mass-ops: aria-pressed when every code in group is enabled; clicking flips all to the opposite state. No tristate.
+- Settings reads merge `DEFAULT_SETTINGS` via `withDefaults` to stay forward-compat when new fields land in later slices.
 
 ### E2E
 - `headless: false`, `slowMo: 800`, final `waitForTimeout(2-3s)` so changes are observable.

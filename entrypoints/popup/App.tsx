@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react';
 import { getErrors, watchErrors } from '@/lib/storage';
 import {
+  type CodeFilters,
   DEFAULT_SETTINGS,
+  FILTERABLE_4XX,
+  FILTERABLE_5XX,
   NOTIFICATION_POSITIONS,
   type NotificationPosition,
   type Settings,
@@ -10,6 +13,7 @@ import {
   setSettings,
   watchSettings,
 } from '@/lib/settings';
+import { shouldShowRecord } from '@/lib/filter';
 import { ThemeApplier } from '@/lib/use-settings';
 import { networkLabel } from '@/lib/format';
 import type { ErrorRecord } from '@/lib/types';
@@ -53,6 +57,63 @@ function MonitoringToggle({ value, onChange }: { value: boolean; onChange: (v: b
       />
       <span>Monitoring Active</span>
     </label>
+  );
+}
+
+function FiltersSection({
+  codeFilters,
+  onChange,
+}: {
+  codeFilters: CodeFilters;
+  onChange: (next: CodeFilters) => void;
+}) {
+  const setGroup = (codes: readonly number[], enabled: boolean) => {
+    const next = { ...codeFilters };
+    for (const c of codes) next[c] = enabled;
+    onChange(next);
+  };
+
+  const groupAllOn = (codes: readonly number[]) => codes.every((c) => codeFilters[c]);
+
+  const setCode = (code: number, enabled: boolean) => {
+    onChange({ ...codeFilters, [code]: enabled });
+  };
+
+  return (
+    <section className="section">
+      <h2>Filters</h2>
+      <div className="filter-groups">
+        <button
+          type="button"
+          data-testid="group-4xx"
+          aria-pressed={groupAllOn(FILTERABLE_4XX)}
+          onClick={() => setGroup(FILTERABLE_4XX, !groupAllOn(FILTERABLE_4XX))}
+        >
+          All 4XX
+        </button>
+        <button
+          type="button"
+          data-testid="group-5xx"
+          aria-pressed={groupAllOn(FILTERABLE_5XX)}
+          onClick={() => setGroup(FILTERABLE_5XX, !groupAllOn(FILTERABLE_5XX))}
+        >
+          All 5XX
+        </button>
+      </div>
+      <div className="code-grid">
+        {[...FILTERABLE_4XX, ...FILTERABLE_5XX].map((code) => (
+          <label key={code} className="code-cell">
+            <input
+              type="checkbox"
+              checked={!!codeFilters[code]}
+              onChange={(e) => setCode(code, e.target.checked)}
+              data-testid={`code-${code}`}
+            />
+            <span>{code}</span>
+          </label>
+        ))}
+      </div>
+    </section>
   );
 }
 
@@ -156,20 +217,46 @@ function App() {
         onTheme={(theme) => update({ theme })}
         onPosition={(notificationPosition) => update({ notificationPosition })}
       />
-      <section className="section">
-        <h2>Errors</h2>
-        {errors.length === 0 ? (
-          <p className="empty" data-testid="empty">No errors yet</p>
-        ) : (
-          <ul className="error-list">
-            {[...errors].reverse().map((e) => (
-              <ErrorRow key={e.id} record={e} />
-            ))}
-          </ul>
-        )}
-      </section>
+      <FiltersSection
+        codeFilters={settings.codeFilters}
+        onChange={(codeFilters) => update({ codeFilters })}
+      />
+      <ErrorsSection errors={errors} codeFilters={settings.codeFilters} />
     </div>
   );
+}
+
+function ErrorsSection({
+  errors,
+  codeFilters,
+}: {
+  errors: ErrorRecord[];
+  codeFilters: CodeFilters;
+}) {
+  const visible = errors.filter((e) => shouldShowRecord(e, codeFilters));
+  const hidden = errors.length - visible.length;
+  return (
+    <section className="section">
+      <h2>
+        Errors
+        {hidden > 0 && (
+          <span className="hidden-count" data-testid="hidden-count">
+            {' '}({hidden} hidden)
+          </span>
+        )}
+      </h2>
+      {errors.length === 0 ? (
+        <p className="empty" data-testid="empty">No errors yet</p>
+      ) : visible.length === 0 ? (
+        <p className="empty" data-testid="all-filtered">All errors filtered out</p>
+      ) : (
+        <ul className="error-list">
+          {[...visible].reverse().map((e) => (
+            <ErrorRow key={e.id} record={e} />
+          ))}
+        </ul>
+      )}
+    </section>);
 }
 
 export default App;

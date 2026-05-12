@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { clearErrors, getErrors, watchErrors } from '@/lib/storage';
+import { DEFAULT_SETTINGS, getSettings, watchSettings, type Settings } from '@/lib/settings';
+import { shouldShowRecord } from '@/lib/filter';
 import { ThemeApplier } from '@/lib/use-settings';
 import { networkLabel } from '@/lib/format';
 import type { ErrorRecord } from '@/lib/types';
@@ -42,11 +44,20 @@ function ErrorCard({ record }: { record: ErrorRecord }) {
 
 function App() {
   const [errors, setErrors] = useState<ErrorRecord[]>([]);
+  const [settings, setLocalSettings] = useState<Settings>(DEFAULT_SETTINGS);
 
   useEffect(() => {
     getErrors().then(setErrors);
     return watchErrors(setErrors);
   }, []);
+
+  useEffect(() => {
+    getSettings().then(setLocalSettings);
+    return watchSettings(setLocalSettings);
+  }, []);
+
+  const visible = errors.filter((e) => shouldShowRecord(e, settings.codeFilters));
+  const hidden = errors.length - visible.length;
 
   return (
     <div className="history">
@@ -54,7 +65,10 @@ function App() {
       <header className="page-header">
         <h1>Error History</h1>
         <div className="actions">
-          <span className="count">{errors.length} / 20</span>
+          <span className="count">
+            {visible.length} / {errors.length}
+            {hidden > 0 && <span className="hidden-note" data-testid="hidden-note"> ({hidden} hidden)</span>}
+          </span>
           <button
             type="button"
             onClick={clearErrors}
@@ -67,9 +81,11 @@ function App() {
       </header>
       {errors.length === 0 ? (
         <p className="empty" data-testid="empty">No errors recorded yet.</p>
+      ) : visible.length === 0 ? (
+        <p className="empty" data-testid="all-filtered">All errors filtered out.</p>
       ) : (
         <ul className="card-list">
-          {[...errors].reverse().map((e) => (
+          {[...visible].reverse().map((e) => (
             <li key={e.id}>
               <ErrorCard record={e} />
             </li>

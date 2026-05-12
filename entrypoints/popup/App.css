@@ -88,6 +88,49 @@
   cursor: pointer;
 }
 
+.filter-groups {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.filter-groups button {
+  flex: 1;
+  padding: 4px 8px;
+  font-size: 11px;
+  border-radius: 3px;
+  border: 1px solid var(--border);
+  background: var(--button-bg);
+  color: var(--fg);
+  cursor: pointer;
+}
+
+.filter-groups button[aria-pressed='true'] {
+  background: var(--fg);
+  color: var(--bg);
+}
+
+.code-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px 12px;
+  font-size: 12px;
+}
+
+.code-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.hidden-count {
+  color: var(--fg-muted);
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
 .field select {
   font-size: 12px;
   padding: 3px 6px;
