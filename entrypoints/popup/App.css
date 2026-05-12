@@ -1,5 +1,5 @@
 .popup {
-  width: 360px;
+  width: 380px;
   padding: 12px;
   font-family: system-ui, sans-serif;
 }
@@ -26,7 +26,7 @@
 
 .error-row {
   display: grid;
-  grid-template-columns: 36px 48px 1fr 64px;
+  grid-template-columns: 44px 88px 1fr 64px;
   gap: 6px;
   align-items: baseline;
   padding: 4px 6px;
@@ -34,17 +34,27 @@
   border-bottom: 1px solid #eee;
 }
 
-.error-row .status {
+.error-row .label {
   font-weight: 600;
+}
+
+.error-row.network .label {
   color: #c00;
 }
 
-.error-row .method {
-  color: #666;
-  font-family: monospace;
+.error-row.runtime .label {
+  color: #b45309;
 }
 
-.error-row .url {
+.error-row .meta {
+  color: #666;
+  font-family: monospace;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.error-row .detail {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

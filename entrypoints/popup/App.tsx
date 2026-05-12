@@ -8,11 +8,21 @@ function formatTime(ts: number): string {
 }
 
 function ErrorRow({ record }: { record: ErrorRecord }) {
+  if (record.kind === 'network') {
+    return (
+      <li className="error-row network" data-testid="error-row" data-kind="network">
+        <span className="label">{record.statusCode}</span>
+        <span className="meta">{record.method}</span>
+        <span className="detail" title={record.url}>{record.url}</span>
+        <span className="time">{formatTime(record.timestamp)}</span>
+      </li>
+    );
+  }
   return (
-    <li className="error-row" data-testid="error-row">
-      <span className="status">{record.statusCode}</span>
-      <span className="method">{record.method}</span>
-      <span className="url" title={record.url}>{record.url}</span>
+    <li className="error-row runtime" data-testid="error-row" data-kind="runtime">
+      <span className="label">ERR</span>
+      <span className="meta" title={record.source}>{record.source}</span>
+      <span className="detail" title={record.message}>{record.message}</span>
       <span className="time">{formatTime(record.timestamp)}</span>
     </li>
   );

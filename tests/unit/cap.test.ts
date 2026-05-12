@@ -2,7 +2,7 @@ import { appendCapped } from '@/lib/cap';
 import type { ErrorRecord } from '@/lib/types';
 
 function rec(id: string): ErrorRecord {
-  return { id, timestamp: 0, statusCode: 404, method: 'GET', url: '/x' };
+  return { kind: 'network', id, timestamp: 0, statusCode: 404, method: 'GET', url: '/x' };
 }
 
 describe('appendCapped', () => {
