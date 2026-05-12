@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { clearErrors, getErrors, watchErrors } from '@/lib/storage';
+import { ThemeApplier } from '@/lib/use-settings';
 import type { ErrorRecord } from '@/lib/types';
 import './App.css';
 
@@ -48,6 +49,7 @@ function App() {
 
   return (
     <div className="history">
+      <ThemeApplier />
       <header className="page-header">
         <h1>Error History</h1>
         <div className="actions">

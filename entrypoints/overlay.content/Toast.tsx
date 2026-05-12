@@ -1,4 +1,10 @@
 import { useEffect, useState } from 'react';
+import {
+  DEFAULT_SETTINGS,
+  type NotificationPosition,
+  getSettings,
+  watchSettings,
+} from '@/lib/settings';
 import type { ErrorRecord } from '@/lib/types';
 import { subscribe } from '@/lib/toast-store';
 
@@ -27,11 +33,22 @@ function ToastCard({ record }: { record: ErrorRecord }) {
 
 export function ToastQueue() {
   const [toasts, setToasts] = useState<ErrorRecord[]>([]);
+  const [position, setPosition] = useState<NotificationPosition>(
+    DEFAULT_SETTINGS.notificationPosition,
+  );
 
   useEffect(() => subscribe(setToasts), []);
+  useEffect(() => {
+    getSettings().then((s) => setPosition(s.notificationPosition));
+    return watchSettings((s) => setPosition(s.notificationPosition));
+  }, []);
 
   return (
-    <div className="toast-stack" data-testid="toast-stack">
+    <div
+      className={`toast-stack ${position}`}
+      data-testid="toast-stack"
+      data-position={position}
+    >
       {toasts.map((record) => (
         <ToastCard key={record.id} record={record} />
       ))}

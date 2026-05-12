@@ -1,7 +1,9 @@
+@import '@/lib/theme.css';
+
 :root {
   font-family: system-ui, sans-serif;
-  color: #222;
-  background: #f7f7f8;
+  color: var(--fg);
+  background: var(--bg-muted);
 }
 
 body {

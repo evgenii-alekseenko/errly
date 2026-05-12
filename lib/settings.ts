@@ -1,9 +1,28 @@
+export type Theme = 'light' | 'dark' | 'system';
+
+export type NotificationPosition =
+  | 'top-left'
+  | 'top-right'
+  | 'bottom-left'
+  | 'bottom-right';
+
+export const NOTIFICATION_POSITIONS: NotificationPosition[] = [
+  'top-left',
+  'top-right',
+  'bottom-left',
+  'bottom-right',
+];
+
 export type Settings = {
   monitoring: boolean;
+  theme: Theme;
+  notificationPosition: NotificationPosition;
 };
 
 export const DEFAULT_SETTINGS: Settings = {
   monitoring: false,
+  theme: 'system',
+  notificationPosition: 'bottom-right',
 };
 
 export const SETTINGS_KEY = 'settings';
