@@ -18,16 +18,20 @@ export const FILTERABLE_5XX = [500, 502, 503, 504] as const;
 export const FILTERABLE_CODES = [...FILTERABLE_4XX, ...FILTERABLE_5XX] as const;
 
 export type CodeFilters = Record<number, boolean>;
+export type CodeColors = Record<number, string>;
 
 const DEFAULT_CODE_FILTERS: CodeFilters = Object.fromEntries(
   FILTERABLE_CODES.map((c) => [c, true]),
 );
+
+export { COLOR_4XX, COLOR_5XX, COLOR_RUNTIME, COLOR_FALLBACK } from './colors';
 
 export type Settings = {
   monitoring: boolean;
   theme: Theme;
   notificationPosition: NotificationPosition;
   codeFilters: CodeFilters;
+  codeColors: CodeColors;
 };
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -35,6 +39,7 @@ export const DEFAULT_SETTINGS: Settings = {
   theme: 'system',
   notificationPosition: 'bottom-right',
   codeFilters: DEFAULT_CODE_FILTERS,
+  codeColors: {},
 };
 
 export const SETTINGS_KEY = 'settings';

@@ -28,7 +28,7 @@ Chrome/Firefox extension. Passive logger for network + runtime errors.
 6. ✅ Theme (light/dark/system) + notification position
 6.5. ✅ Capture network-level failures (`onErrorOccurred`) — `ERR_CONNECTION_REFUSED`, DNS, TLS
 7a. ✅ Code filters (groups + 9 codes) — display-only, runtime always shown
-7b. Per-code colors → toast/card stripes
+7b. ✅ Per-code color picker → toast + history card left-border stripe
 7c. Search-text + type filter in history
 8. Detail page (introduces ReactRouter)
 9. Screenshot / test-error / copy-last buttons
@@ -124,9 +124,11 @@ lib/
                                    # ShowToastMessage, RuntimePayload + marker
   storage.ts                       # errors storage (get/push/clear/watch)
   cap.ts                           # pure: appendCapped (Jest-testable)
-  format.ts                        # pure: networkLabel (statusCode || stripped errorText)
+  colors.ts                        # pure: default color constants (no WXT dep)
+  format.ts                        # pure: networkLabel, getRecordColor
   filter.ts                        # pure: shouldShowRecord (codeFilters logic)
-  settings.ts                      # Settings (monitoring, theme, position, codeFilters)
+  settings.ts                      # Settings (monitoring, theme, position,
+                                   # codeFilters, codeColors)
                                    # withDefaults merge for forward-compat reads
   toast-store.ts                   # module-level pub/sub for toasts (race-proof)
   use-settings.ts                  # React: useSettings, useEffectiveTheme, ThemeApplier
@@ -169,6 +171,7 @@ tests/
 - Filters are **display-only**: storage holds everything captured, popup/history render via `shouldShowRecord`. Toast on-page is not filtered — toast = "this just happened" signal independent of saved-view filters.
 - Group buttons (`All 4XX`/`All 5XX`) are mass-ops: aria-pressed when every code in group is enabled; clicking flips all to the opposite state. No tristate.
 - Settings reads merge `DEFAULT_SETTINGS` via `withDefaults` to stay forward-compat when new fields land in later slices.
+- Colors: user-pickable per code (9 codes); applied as inline `borderLeftColor` on toast + history card. Defaults: 4XX amber, 5XX red, runtime amber, other grey (status 0 included). Constants live in `lib/colors.ts` — pure module, no WXT dep, so Jest can import without polyfilling `storage`.
 
 ### E2E
 - `headless: false`, `slowMo: 800`, final `waitForTimeout(2-3s)` so changes are observable.

@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react';
 import { getErrors, watchErrors } from '@/lib/storage';
 import {
+  type CodeColors,
   type CodeFilters,
+  COLOR_4XX,
+  COLOR_5XX,
   DEFAULT_SETTINGS,
   FILTERABLE_4XX,
   FILTERABLE_5XX,
@@ -60,23 +63,35 @@ function MonitoringToggle({ value, onChange }: { value: boolean; onChange: (v: b
   );
 }
 
+function defaultColorFor(code: number): string {
+  return code >= 500 ? COLOR_5XX : COLOR_4XX;
+}
+
 function FiltersSection({
   codeFilters,
-  onChange,
+  codeColors,
+  onFilters,
+  onColors,
 }: {
   codeFilters: CodeFilters;
-  onChange: (next: CodeFilters) => void;
+  codeColors: CodeColors;
+  onFilters: (next: CodeFilters) => void;
+  onColors: (next: CodeColors) => void;
 }) {
   const setGroup = (codes: readonly number[], enabled: boolean) => {
     const next = { ...codeFilters };
     for (const c of codes) next[c] = enabled;
-    onChange(next);
+    onFilters(next);
   };
 
   const groupAllOn = (codes: readonly number[]) => codes.every((c) => codeFilters[c]);
 
   const setCode = (code: number, enabled: boolean) => {
-    onChange({ ...codeFilters, [code]: enabled });
+    onFilters({ ...codeFilters, [code]: enabled });
+  };
+
+  const setColor = (code: number, color: string) => {
+    onColors({ ...codeColors, [code]: color });
   };
 
   return (
@@ -102,15 +117,24 @@ function FiltersSection({
       </div>
       <div className="code-grid">
         {[...FILTERABLE_4XX, ...FILTERABLE_5XX].map((code) => (
-          <label key={code} className="code-cell">
+          <div key={code} className="code-cell">
+            <label className="code-toggle">
+              <input
+                type="checkbox"
+                checked={!!codeFilters[code]}
+                onChange={(e) => setCode(code, e.target.checked)}
+                data-testid={`code-${code}`}
+              />
+              <span>{code}</span>
+            </label>
             <input
-              type="checkbox"
-              checked={!!codeFilters[code]}
-              onChange={(e) => setCode(code, e.target.checked)}
-              data-testid={`code-${code}`}
+              type="color"
+              value={codeColors[code] ?? defaultColorFor(code)}
+              onChange={(e) => setColor(code, e.target.value)}
+              data-testid={`color-${code}`}
+              aria-label={`Color for ${code}`}
             />
-            <span>{code}</span>
-          </label>
+          </div>
         ))}
       </div>
     </section>
@@ -219,7 +243,9 @@ function App() {
       />
       <FiltersSection
         codeFilters={settings.codeFilters}
-        onChange={(codeFilters) => update({ codeFilters })}
+        codeColors={settings.codeColors}
+        onFilters={(codeFilters) => update({ codeFilters })}
+        onColors={(codeColors) => update({ codeColors })}
       />
       <ErrorsSection errors={errors} codeFilters={settings.codeFilters} />
     </div>

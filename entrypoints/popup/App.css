@@ -113,14 +113,32 @@
 .code-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 2px 12px;
+  gap: 4px 12px;
   font-size: 12px;
 }
 
 .code-cell {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.code-toggle {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  cursor: pointer;
+  flex: 1;
+}
+
+.code-cell input[type='color'] {
+  width: 24px;
+  height: 18px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 0;
+  background: transparent;
   cursor: pointer;
 }
 

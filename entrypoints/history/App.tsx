@@ -3,7 +3,7 @@ import { clearErrors, getErrors, watchErrors } from '@/lib/storage';
 import { DEFAULT_SETTINGS, getSettings, watchSettings, type Settings } from '@/lib/settings';
 import { shouldShowRecord } from '@/lib/filter';
 import { ThemeApplier } from '@/lib/use-settings';
-import { networkLabel } from '@/lib/format';
+import { getRecordColor, networkLabel } from '@/lib/format';
 import type { ErrorRecord } from '@/lib/types';
 import './App.css';
 
@@ -11,10 +11,11 @@ function formatTimestamp(ts: number): string {
   return new Date(ts).toLocaleString();
 }
 
-function ErrorCard({ record }: { record: ErrorRecord }) {
+function ErrorCard({ record, color }: { record: ErrorRecord; color: string }) {
+  const style = { borderLeftColor: color, borderLeftWidth: '4px', borderLeftStyle: 'solid' as const };
   if (record.kind === 'network') {
     return (
-      <article className="card network" data-testid="error-card" data-kind="network">
+      <article className="card network" style={style} data-testid="error-card" data-kind="network">
         <header>
           <span className="badge status" title={record.errorText}>{networkLabel(record)}</span>
           <span className="badge method">{record.method}</span>
@@ -25,7 +26,7 @@ function ErrorCard({ record }: { record: ErrorRecord }) {
     );
   }
   return (
-    <article className="card runtime" data-testid="error-card" data-kind="runtime">
+    <article className="card runtime" style={style} data-testid="error-card" data-kind="runtime">
       <header>
         <span className="badge status">ERR</span>
         <span className="badge source">{record.source}</span>
@@ -87,7 +88,7 @@ function App() {
         <ul className="card-list">
           {[...visible].reverse().map((e) => (
             <li key={e.id}>
-              <ErrorCard record={e} />
+              <ErrorCard record={e} color={getRecordColor(e, settings.codeColors)} />
             </li>
           ))}
         </ul>

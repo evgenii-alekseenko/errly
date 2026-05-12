@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import {
+  type CodeColors,
   DEFAULT_SETTINGS,
   type NotificationPosition,
   getSettings,
@@ -7,12 +8,13 @@ import {
 } from '@/lib/settings';
 import type { ErrorRecord } from '@/lib/types';
 import { subscribe } from '@/lib/toast-store';
-import { networkLabel } from '@/lib/format';
+import { getRecordColor, networkLabel } from '@/lib/format';
 
-function ToastCard({ record }: { record: ErrorRecord }) {
+function ToastCard({ record, color }: { record: ErrorRecord; color: string }) {
+  const style = { borderLeftColor: color };
   if (record.kind === 'network') {
     return (
-      <div className="toast network" data-testid="toast" data-kind="network">
+      <div className="toast network" style={style} data-testid="toast" data-kind="network">
         <span className="label" title={record.errorText}>{networkLabel(record)}</span>
         <div className="body">
           <div className="title">{record.method} {record.url}</div>
@@ -22,7 +24,7 @@ function ToastCard({ record }: { record: ErrorRecord }) {
     );
   }
   return (
-    <div className="toast runtime" data-testid="toast" data-kind="runtime">
+    <div className="toast runtime" style={style} data-testid="toast" data-kind="runtime">
       <span className="label">ERR</span>
       <div className="body">
         <div className="title">{record.message}</div>
@@ -37,11 +39,18 @@ export function ToastQueue() {
   const [position, setPosition] = useState<NotificationPosition>(
     DEFAULT_SETTINGS.notificationPosition,
   );
+  const [codeColors, setCodeColors] = useState<CodeColors>({});
 
   useEffect(() => subscribe(setToasts), []);
   useEffect(() => {
-    getSettings().then((s) => setPosition(s.notificationPosition));
-    return watchSettings((s) => setPosition(s.notificationPosition));
+    getSettings().then((s) => {
+      setPosition(s.notificationPosition);
+      setCodeColors(s.codeColors);
+    });
+    return watchSettings((s) => {
+      setPosition(s.notificationPosition);
+      setCodeColors(s.codeColors);
+    });
   }, []);
 
   return (
@@ -51,7 +60,7 @@ export function ToastQueue() {
       data-position={position}
     >
       {toasts.map((record) => (
-        <ToastCard key={record.id} record={record} />
+        <ToastCard key={record.id} record={record} color={getRecordColor(record, codeColors)} />
       ))}
     </div>
   );
