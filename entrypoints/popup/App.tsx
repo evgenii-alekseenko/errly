@@ -1,5 +1,12 @@
 import { useEffect, useState } from 'react';
 import { getErrors, watchErrors } from '@/lib/storage';
+import {
+  DEFAULT_SETTINGS,
+  getSettings,
+  setSettings,
+  type Settings,
+  watchSettings,
+} from '@/lib/settings';
 import type { ErrorRecord } from '@/lib/types';
 import './App.css';
 
@@ -28,17 +35,48 @@ function ErrorRow({ record }: { record: ErrorRecord }) {
   );
 }
 
+function MonitoringToggle({ value, onChange }: { value: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <label className="monitoring-toggle">
+      <input
+        type="checkbox"
+        checked={value}
+        onChange={(e) => onChange(e.target.checked)}
+        data-testid="monitoring-toggle"
+      />
+      <span>Monitoring Active</span>
+    </label>
+  );
+}
+
 function App() {
   const [errors, setErrors] = useState<ErrorRecord[]>([]);
+  const [settings, setLocalSettings] = useState<Settings>(DEFAULT_SETTINGS);
 
   useEffect(() => {
     getErrors().then(setErrors);
     return watchErrors(setErrors);
   }, []);
 
+  useEffect(() => {
+    getSettings().then(setLocalSettings);
+    return watchSettings(setLocalSettings);
+  }, []);
+
+  const handleToggle = (monitoring: boolean) => {
+    setLocalSettings((s) => ({ ...s, monitoring }));
+    setSettings({ monitoring });
+  };
+
   return (
-    <div className="popup">
-      <h1>Error Logger</h1>
+    <div className="popup" data-monitoring={settings.monitoring ? 'on' : 'off'}>
+      <header className="popup-header">
+        <h1>Error Logger</h1>
+        <MonitoringToggle value={settings.monitoring} onChange={handleToggle} />
+      </header>
+      {!settings.monitoring && (
+        <p className="hint" data-testid="off-hint">Monitoring is off — flip toggle to capture.</p>
+      )}
       {errors.length === 0 ? (
         <p className="empty" data-testid="empty">No errors yet</p>
       ) : (

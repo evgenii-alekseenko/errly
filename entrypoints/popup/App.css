@@ -4,9 +4,34 @@
   font-family: system-ui, sans-serif;
 }
 
+.popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
 .popup h1 {
   font-size: 14px;
-  margin: 0 0 8px;
+  margin: 0;
+}
+
+.monitoring-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.hint {
+  margin: 4px 0 8px;
+  padding: 6px 8px;
+  background: #fff7e6;
+  border-left: 3px solid #f59e0b;
+  font-size: 11px;
+  color: #92400e;
 }
 
 .empty {

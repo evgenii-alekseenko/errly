@@ -1,30 +1,16 @@
-import { test, expect, chromium, type BrowserContext } from '@playwright/test';
-import path from 'node:path';
-import os from 'node:os';
-import fs from 'node:fs';
-import { fileURLToPath } from 'node:url';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const extensionPath = path.resolve(__dirname, '../../.output/chrome-mv3');
+import { test, expect, type BrowserContext, type Worker } from '@playwright/test';
+import { launchExtension, setMonitoring } from './fixtures';
 
 let context: BrowserContext;
 let extensionId: string;
+let serviceWorker: Worker;
 
 test.beforeAll(async () => {
-  const userDataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'pw-ext-'));
-  context = await chromium.launchPersistentContext(userDataDir, {
-    channel: 'chromium',
-    headless: false,
-    slowMo: 800,
-    args: [
-      `--disable-extensions-except=${extensionPath}`,
-      `--load-extension=${extensionPath}`,
-    ],
-  });
+  ({ context, extensionId, serviceWorker } = await launchExtension());
+});
 
-  let [sw] = context.serviceWorkers();
-  if (!sw) sw = await context.waitForEvent('serviceworker');
-  extensionId = sw.url().split('/')[2];
+test.beforeEach(async () => {
+  await setMonitoring(serviceWorker, true);
 });
 
 test.afterAll(async () => {

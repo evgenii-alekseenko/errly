@@ -1,4 +1,5 @@
 import { pushError } from '@/lib/storage';
+import { getSettings } from '@/lib/settings';
 import {
   type ErrorRecord,
   RUNTIME_MESSAGE_MARKER,
@@ -18,6 +19,7 @@ export default defineBackground(() => {
   browser.webRequest.onCompleted.addListener(
     async (details) => {
       if (details.statusCode < 400) return;
+      if (!(await getSettings()).monitoring) return;
       if (!(await isActiveTab(details.tabId))) return;
 
       const record: ErrorRecord = {
@@ -36,6 +38,7 @@ export default defineBackground(() => {
   browser.runtime.onMessage.addListener(async (message, sender) => {
     const payload = message as RuntimePayload | undefined;
     if (!payload || payload.marker !== RUNTIME_MESSAGE_MARKER) return;
+    if (!(await getSettings()).monitoring) return;
     if (!(await isActiveTab(sender.tab?.id))) return;
 
     const record: ErrorRecord = {
