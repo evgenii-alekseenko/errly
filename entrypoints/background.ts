@@ -46,6 +46,28 @@ export default defineBackground(() => {
     { urls: ['<all_urls>'] },
   );
 
+  browser.webRequest.onErrorOccurred.addListener(
+    async (details) => {
+      // Browser cancels and request aborts also flow here; skip them.
+      if (details.error === 'net::ERR_ABORTED') return;
+      if (!(await getSettings()).monitoring) return;
+      if (!(await isActiveTab(details.tabId))) return;
+
+      const record: ErrorRecord = {
+        kind: 'network',
+        id: crypto.randomUUID(),
+        timestamp: details.timeStamp,
+        statusCode: 0,
+        errorText: details.error,
+        method: details.method,
+        url: details.url,
+      };
+      await pushError(record);
+      await notifyTab(details.tabId, record);
+    },
+    { urls: ['<all_urls>'] },
+  );
+
   browser.runtime.onMessage.addListener(async (message, sender) => {
     const payload = message as RuntimePayload | undefined;
     if (!payload || payload.marker !== RUNTIME_MESSAGE_MARKER) return;

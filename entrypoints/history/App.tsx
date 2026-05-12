@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { clearErrors, getErrors, watchErrors } from '@/lib/storage';
 import { ThemeApplier } from '@/lib/use-settings';
+import { networkLabel } from '@/lib/format';
 import type { ErrorRecord } from '@/lib/types';
 import './App.css';
 
@@ -13,7 +14,7 @@ function ErrorCard({ record }: { record: ErrorRecord }) {
     return (
       <article className="card network" data-testid="error-card" data-kind="network">
         <header>
-          <span className="badge status">{record.statusCode}</span>
+          <span className="badge status" title={record.errorText}>{networkLabel(record)}</span>
           <span className="badge method">{record.method}</span>
           <span className="time">{formatTimestamp(record.timestamp)}</span>
         </header>

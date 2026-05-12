@@ -11,6 +11,7 @@ import {
   watchSettings,
 } from '@/lib/settings';
 import { ThemeApplier } from '@/lib/use-settings';
+import { networkLabel } from '@/lib/format';
 import type { ErrorRecord } from '@/lib/types';
 import './App.css';
 
@@ -24,7 +25,7 @@ function ErrorRow({ record }: { record: ErrorRecord }) {
   if (record.kind === 'network') {
     return (
       <li className="error-row network" data-testid="error-row" data-kind="network">
-        <span className="label">{record.statusCode}</span>
+        <span className="label" title={record.errorText}>{networkLabel(record)}</span>
         <span className="meta">{record.method}</span>
         <span className="detail" title={record.url}>{record.url}</span>
         <span className="time">{formatTime(record.timestamp)}</span>

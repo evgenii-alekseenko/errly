@@ -22,6 +22,15 @@ const pages = {
   setTimeout(() => { Promise.reject(new Error('boom-from-reject')); }, 50);
 </script>
 </body></html>`,
+
+  '/refused.html': `<!doctype html>
+<html><body>
+<h1>Connection refused fixture</h1>
+<script>
+  // High port unlikely to be bound; not on Chrome's unsafe-ports list.
+  fetch('http://127.0.0.1:39999/api/refused-target').catch(()=>{});
+</script>
+</body></html>`,
 };
 
 const server = http.createServer((req, res) => {

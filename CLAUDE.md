@@ -14,6 +14,7 @@ Chrome/Firefox extension. Passive logger for network + runtime errors.
 - **Vertical slices, minimum viable each.** Don't pre-build for future slices. No premature abstractions.
 - **No estimates.** Skip time/effort guesses.
 - **Re-grill before each slice.** Don't deep-design slices N+1 from slice N.
+- **Update CLAUDE.md before every commit.** Roadmap status, architecture diagram, conventions — keep current. The doc update is part of the commit, not after.
 - **Commit after each slice.**
 - **Pure logic in own modules.** WXT globals (`browser`, `storage`, `defineBackground`) aren't available in Jest — split testable pure functions out (see `lib/cap.ts`).
 
@@ -25,6 +26,7 @@ Chrome/Firefox extension. Passive logger for network + runtime errors.
 4. ✅ History page + Clear button
 5. ✅ Shadow-DOM toast overlay on originating tab
 6. ✅ Theme (light/dark/system) + notification position
+6.5. ✅ Capture network-level failures (`onErrorOccurred`) — `ERR_CONNECTION_REFUSED`, DNS, TLS
 7. Filters + colors + search (Zustand starts paying off)
 8. Detail page (introduces ReactRouter)
 9. Screenshot / test-error / copy-last buttons
@@ -51,11 +53,13 @@ flowchart LR
 
   subgraph BG["Background service worker"]
     direction TB
-    WR["webRequest.onCompleted"]
+    WR["webRequest.onCompleted<br/>(status &ge; 400)"]
+    WErr["webRequest.onErrorOccurred<br/>(network-level)"]
     Msg["runtime.onMessage<br/>(RuntimePayload)"]
     Push["pushError + cap 20"]
     Notify["notifyTab<br/>tabs.sendMessage"]
     WR --> Push
+    WErr --> Push
     Msg --> Push
     Push --> Notify
   end
@@ -72,11 +76,13 @@ flowchart LR
   end
 
   Net --> WR
+  Net -- "no response<br/>(refused, DNS, TLS)" --> WErr
   Bridge -- "runtime.sendMessage" --> Msg
   Notify -. "ShowToastMessage" .-> Overlay
 
   Push --> Errors
   Sett -. "read per event<br/>(monitoring guard)" .-> WR
+  Sett -. "read per event<br/>(monitoring guard)" .-> WErr
   Sett -. "read per event<br/>(monitoring guard)" .-> Msg
 
   Errors -. "watch" .-> Popup
@@ -98,7 +104,8 @@ flowchart LR
 
 ```
 entrypoints/
-  background.ts                    # webRequest + runtime.onMessage handlers,
+  background.ts                    # webRequest.onCompleted + onErrorOccurred
+                                   # + runtime.onMessage handlers,
                                    # notifyTab via tabs.sendMessage after pushError
   runtime-main.content.ts          # MAIN world: window.error + unhandledrejection
   runtime-bridge.content.ts        # ISOLATED: postMessage → runtime.sendMessage
@@ -110,10 +117,12 @@ entrypoints/
   history/                         # /history.html — full page
 
 lib/
-  types.ts                         # NetworkError | RuntimeError discriminated union
+  types.ts                         # NetworkError (statusCode 0 + errorText for net-level)
+                                   # | RuntimeError discriminated union
                                    # ShowToastMessage, RuntimePayload + marker
   storage.ts                       # errors storage (get/push/clear/watch)
   cap.ts                           # pure: appendCapped (Jest-testable)
+  format.ts                        # pure: networkLabel (statusCode || stripped errorText)
   settings.ts                      # Settings (monitoring, theme, notificationPosition)
   toast-store.ts                   # module-level pub/sub for toasts (race-proof)
   use-settings.ts                  # React: useSettings, useEffectiveTheme, ThemeApplier
@@ -122,7 +131,7 @@ lib/
 tests/
   unit/                            # Jest
   e2e/
-    fixture-server.mjs             # local Node http server: /error /throw /reject
+    fixture-server.mjs             # local Node http: /error /throw /reject /refused
     fixtures.ts                    # launchExtension + setMonitoring + setStorage helpers
     *.spec.ts
 ```
@@ -140,6 +149,9 @@ tests/
 - Background reads `settings.monitoring` per event; default is OFF (explicit opt-in).
 - `host_permissions: <all_urls>` in manifest, but UX is "current tab only".
 - No dedup yet — separate slice if it becomes a real problem.
+- Network failures with no response (refused/DNS/TLS) flow through `webRequest.onErrorOccurred`, not `onCompleted` — both listened, both feed the same `pushError`. `statusCode = 0` + `errorText` flags net-level.
+- `net::ERR_ABORTED` is skipped: browser-cancelled requests (page navigation, AbortController) aren't errors.
+- **Things still NOT captured (known gaps):** `console.error/warn` calls (only true uncaught throws/rejections are caught); requests blocked by extensions or CSP before reaching the network stack.
 
 ### Cross-context messaging
 - MAIN-world content script can't use `browser.*` API — communicates with ISOLATED bridge via `window.postMessage` + magic marker (`RUNTIME_MESSAGE_MARKER`).

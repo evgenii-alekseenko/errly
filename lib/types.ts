@@ -6,6 +6,7 @@ type Base = {
 export type NetworkError = Base & {
   kind: 'network';
   statusCode: number;
+  errorText?: string;
   method: string;
   url: string;
 };

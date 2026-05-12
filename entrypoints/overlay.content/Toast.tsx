@@ -7,12 +7,13 @@ import {
 } from '@/lib/settings';
 import type { ErrorRecord } from '@/lib/types';
 import { subscribe } from '@/lib/toast-store';
+import { networkLabel } from '@/lib/format';
 
 function ToastCard({ record }: { record: ErrorRecord }) {
   if (record.kind === 'network') {
     return (
       <div className="toast network" data-testid="toast" data-kind="network">
-        <span className="label">{record.statusCode}</span>
+        <span className="label" title={record.errorText}>{networkLabel(record)}</span>
         <div className="body">
           <div className="title">{record.method} {record.url}</div>
           <div className="time">{new Date(record.timestamp).toLocaleTimeString()}</div>
