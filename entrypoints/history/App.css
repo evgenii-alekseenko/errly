@@ -1,0 +1,130 @@
+.history {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 24px 16px 64px;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.page-header h1 {
+  font-size: 20px;
+  margin: 0;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.actions .count {
+  font-size: 12px;
+  color: #666;
+  font-variant-numeric: tabular-nums;
+}
+
+.actions button {
+  padding: 6px 12px;
+  font-size: 12px;
+  border-radius: 4px;
+  border: 1px solid #d4d4d8;
+  background: #fff;
+  cursor: pointer;
+}
+
+.actions button:hover:not(:disabled) {
+  background: #fafafa;
+}
+
+.actions button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.empty {
+  text-align: center;
+  color: #999;
+  padding: 48px 0;
+}
+
+.card-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 13px;
+}
+
+.card header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.badge {
+  font-family: monospace;
+  font-size: 12px;
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.card.network .badge.status {
+  background: #fee2e2;
+  color: #b91c1c;
+  font-weight: 600;
+}
+
+.card.runtime .badge.status {
+  background: #fef3c7;
+  color: #92400e;
+  font-weight: 600;
+}
+
+.card .time {
+  margin-left: auto;
+  color: #9ca3af;
+  font-size: 11px;
+}
+
+.card .url,
+.card .message {
+  margin: 0;
+  word-break: break-all;
+  color: #1f2937;
+}
+
+.card .stack {
+  margin-top: 6px;
+  font-size: 12px;
+}
+
+.card .stack summary {
+  cursor: pointer;
+  color: #6b7280;
+}
+
+.card .stack pre {
+  margin: 6px 0 0;
+  padding: 8px;
+  background: #f9fafb;
+  border-radius: 4px;
+  font-size: 11px;
+  overflow-x: auto;
+  white-space: pre-wrap;
+}

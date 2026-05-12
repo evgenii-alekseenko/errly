@@ -68,12 +68,21 @@ function App() {
     setSettings({ monitoring });
   };
 
+  const openHistory = () => {
+    browser.tabs.create({ url: browser.runtime.getURL('/history.html') });
+  };
+
   return (
     <div className="popup" data-monitoring={settings.monitoring ? 'on' : 'off'}>
       <header className="popup-header">
         <h1>Error Logger</h1>
         <MonitoringToggle value={settings.monitoring} onChange={handleToggle} />
       </header>
+      <div className="popup-actions">
+        <button type="button" onClick={openHistory} data-testid="open-history">
+          History ({errors.length})
+        </button>
+      </div>
       {!settings.monitoring && (
         <p className="hint" data-testid="off-hint">Monitoring is off — flip toggle to capture.</p>
       )}

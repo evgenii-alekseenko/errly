@@ -25,6 +25,26 @@
   user-select: none;
 }
 
+.popup-actions {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.popup-actions button {
+  flex: 1;
+  padding: 6px 10px;
+  font-size: 12px;
+  border-radius: 4px;
+  border: 1px solid #d4d4d8;
+  background: #fff;
+  cursor: pointer;
+}
+
+.popup-actions button:hover {
+  background: #fafafa;
+}
+
 .hint {
   margin: 4px 0 8px;
   padding: 6px 8px;

@@ -14,6 +14,10 @@ export async function pushError(record: ErrorRecord): Promise<void> {
   await errorsItem.setValue(appendCapped(current, record));
 }
 
+export async function clearErrors(): Promise<void> {
+  await errorsItem.setValue([]);
+}
+
 export function watchErrors(cb: (records: ErrorRecord[]) => void): () => void {
   return errorsItem.watch((newValue: ErrorRecord[] | null) => {
     cb(newValue ?? []);
