@@ -51,6 +51,53 @@
   cursor: not-allowed;
 }
 
+.toolbar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  align-items: center;
+}
+
+.toolbar .search {
+  flex: 1;
+  padding: 6px 10px;
+  font-size: 13px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--fg);
+}
+
+.type-filter {
+  display: inline-flex;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.type-filter button {
+  padding: 6px 10px;
+  font-size: 12px;
+  border: none;
+  background: var(--button-bg);
+  color: var(--fg-muted);
+  cursor: pointer;
+  border-left: 1px solid var(--border);
+}
+
+.type-filter button:first-child {
+  border-left: none;
+}
+
+.type-filter button:hover {
+  background: var(--button-hover);
+}
+
+.type-filter button.active {
+  background: var(--accent, #2563eb);
+  color: #fff;
+}
+
 .empty {
   text-align: center;
   color: var(--fg-faint);

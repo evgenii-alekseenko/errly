@@ -1,11 +1,18 @@
 import { useEffect, useState } from 'react';
 import { clearErrors, getErrors, watchErrors } from '@/lib/storage';
 import { DEFAULT_SETTINGS, getSettings, watchSettings, type Settings } from '@/lib/settings';
-import { shouldShowRecord } from '@/lib/filter';
+import { matchesType, shouldShowRecord, type TypeFilter } from '@/lib/filter';
+import { matchesSearch } from '@/lib/search';
 import { ThemeApplier } from '@/lib/use-settings';
 import { getRecordColor, networkLabel } from '@/lib/format';
 import type { ErrorRecord } from '@/lib/types';
 import './App.css';
+
+const TYPE_OPTIONS: { value: TypeFilter; label: string }[] = [
+  { value: 'all', label: 'All' },
+  { value: 'network', label: 'Network' },
+  { value: 'runtime', label: 'Runtime' },
+];
 
 function formatTimestamp(ts: number): string {
   return new Date(ts).toLocaleString();
@@ -46,6 +53,8 @@ function ErrorCard({ record, color }: { record: ErrorRecord; color: string }) {
 function App() {
   const [errors, setErrors] = useState<ErrorRecord[]>([]);
   const [settings, setLocalSettings] = useState<Settings>(DEFAULT_SETTINGS);
+  const [query, setQuery] = useState('');
+  const [typeFilter, setTypeFilter] = useState<TypeFilter>('all');
 
   useEffect(() => {
     getErrors().then(setErrors);
@@ -57,7 +66,12 @@ function App() {
     return watchSettings(setLocalSettings);
   }, []);
 
-  const visible = errors.filter((e) => shouldShowRecord(e, settings.codeFilters));
+  const visible = errors.filter(
+    (e) =>
+      shouldShowRecord(e, settings.codeFilters) &&
+      matchesType(e, typeFilter) &&
+      matchesSearch(e, query),
+  );
   const hidden = errors.length - visible.length;
 
   return (
@@ -80,6 +94,30 @@ function App() {
           </button>
         </div>
       </header>
+      <div className="toolbar">
+        <input
+          type="search"
+          className="search"
+          placeholder="Search url, message, code…"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          data-testid="search-input"
+        />
+        <div className="type-filter" role="group" aria-label="Type filter">
+          {TYPE_OPTIONS.map((opt) => (
+            <button
+              key={opt.value}
+              type="button"
+              className={typeFilter === opt.value ? 'active' : ''}
+              aria-pressed={typeFilter === opt.value}
+              onClick={() => setTypeFilter(opt.value)}
+              data-testid={`type-${opt.value}`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      </div>
       {errors.length === 0 ? (
         <p className="empty" data-testid="empty">No errors recorded yet.</p>
       ) : visible.length === 0 ? (

@@ -29,7 +29,7 @@ Chrome/Firefox extension. Passive logger for network + runtime errors.
 6.5. ✅ Capture network-level failures (`onErrorOccurred`) — `ERR_CONNECTION_REFUSED`, DNS, TLS
 7a. ✅ Code filters (groups + 9 codes) — display-only, runtime always shown
 7b. ✅ Per-code color picker → toast + history card left-border stripe
-7c. Search-text + type filter in history
+7c. ✅ Search-text + type filter in history (live, local state)
 8. Detail page (introduces ReactRouter)
 9. Screenshot / test-error / copy-last buttons
 10. Report templates (JSON + Jira URL, Strategy pattern)
@@ -126,7 +126,8 @@ lib/
   cap.ts                           # pure: appendCapped (Jest-testable)
   colors.ts                        # pure: default color constants (no WXT dep)
   format.ts                        # pure: networkLabel, getRecordColor
-  filter.ts                        # pure: shouldShowRecord (codeFilters logic)
+  filter.ts                        # pure: shouldShowRecord (codeFilters) + matchesType
+  search.ts                        # pure: matchesSearch (live history search)
   settings.ts                      # Settings (monitoring, theme, position,
                                    # codeFilters, codeColors)
                                    # withDefaults merge for forward-compat reads
@@ -172,6 +173,7 @@ tests/
 - Group buttons (`All 4XX`/`All 5XX`) are mass-ops: aria-pressed when every code in group is enabled; clicking flips all to the opposite state. No tristate.
 - Settings reads merge `DEFAULT_SETTINGS` via `withDefaults` to stay forward-compat when new fields land in later slices.
 - Colors: user-pickable per code (9 codes); applied as inline `borderLeftColor` on toast + history card. Defaults: 4XX amber, 5XX red, runtime amber, other grey (status 0 included). Constants live in `lib/colors.ts` — pure module, no WXT dep, so Jest can import without polyfilling `storage`.
+- History search + type filter live in **local React state** (not settings) — ephemeral ad-hoc lookup, resets on page reopen. Search hits URL+method+statusCode+errorText for network, message+source+stack for runtime. Type filter is a 3-button segmented control (All/Network/Runtime), aria-pressed for active.
 
 ### E2E
 - `headless: false`, `slowMo: 800`, final `waitForTimeout(2-3s)` so changes are observable.
