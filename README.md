@@ -104,7 +104,9 @@ entrypoints/
     Toast.tsx                      #   ToastQueue component (subscribes to toast-store)
     style.css
   popup/                           # action popup
-  history/                         # /history.html — full page
+  errors/                          # /errors.html — full page.
+                                   # Folder NOT named `history/` — WXT auto-maps
+                                   # that to chrome_url_overrides.history.
 
 lib/
   types.ts                         # NetworkError (statusCode 0 + errorText for net-level)

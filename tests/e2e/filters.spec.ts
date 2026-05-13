@@ -77,7 +77,7 @@ test('history page also respects filters', async () => {
   await page.waitForLoadState('networkidle');
 
   const history = await context.newPage();
-  await history.goto(`chrome-extension://${extensionId}/history.html`);
+  await history.goto(`chrome-extension://${extensionId}/errors.html`);
 
   const missingCard = history
     .locator('[data-testid="error-card"]')

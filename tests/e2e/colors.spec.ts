@@ -56,7 +56,7 @@ test('custom color paints the history card', async () => {
   await page.waitForLoadState('networkidle');
 
   const history = await context.newPage();
-  await history.goto(`chrome-extension://${extensionId}/history.html`);
+  await history.goto(`chrome-extension://${extensionId}/errors.html`);
 
   const card = history
     .locator('[data-testid="error-card"]')

@@ -53,7 +53,7 @@ test.beforeEach(async () => {
 
 test('search filters cards live by url substring', async () => {
   const history = await context.newPage();
-  await history.goto(`chrome-extension://${extensionId}/history.html`);
+  await history.goto(`chrome-extension://${extensionId}/errors.html`);
 
   await expect(history.locator('[data-testid="error-card"]')).toHaveCount(3);
 
@@ -66,7 +66,7 @@ test('search filters cards live by url substring', async () => {
 
 test('search matches status code as string', async () => {
   const history = await context.newPage();
-  await history.goto(`chrome-extension://${extensionId}/history.html`);
+  await history.goto(`chrome-extension://${extensionId}/errors.html`);
 
   await history.locator('[data-testid="search-input"]').fill('404');
   await expect(history.locator('[data-testid="error-card"]')).toHaveCount(1);
@@ -77,7 +77,7 @@ test('search matches status code as string', async () => {
 
 test('type filter Network hides runtime errors', async () => {
   const history = await context.newPage();
-  await history.goto(`chrome-extension://${extensionId}/history.html`);
+  await history.goto(`chrome-extension://${extensionId}/errors.html`);
 
   await history.locator('[data-testid="type-network"]').click();
   const cards = history.locator('[data-testid="error-card"]');
@@ -89,7 +89,7 @@ test('type filter Network hides runtime errors', async () => {
 
 test('type filter Runtime hides network errors', async () => {
   const history = await context.newPage();
-  await history.goto(`chrome-extension://${extensionId}/history.html`);
+  await history.goto(`chrome-extension://${extensionId}/errors.html`);
 
   await history.locator('[data-testid="type-runtime"]').click();
   const cards = history.locator('[data-testid="error-card"]');

@@ -23,7 +23,7 @@ test('history page shows captured errors and clears on demand', async () => {
   await page.waitForLoadState('networkidle');
 
   const history = await context.newPage();
-  await history.goto(`chrome-extension://${extensionId}/history.html`);
+  await history.goto(`chrome-extension://${extensionId}/errors.html`);
 
   const networkCard = history
     .locator('[data-testid="error-card"][data-kind="network"]')
@@ -48,7 +48,7 @@ test('runtime stack trace expands via details', async () => {
   await page.waitForTimeout(200);
 
   const history = await context.newPage();
-  await history.goto(`chrome-extension://${extensionId}/history.html`);
+  await history.goto(`chrome-extension://${extensionId}/errors.html`);
 
   const runtimeCard = history
     .locator('[data-testid="error-card"][data-kind="runtime"]')
