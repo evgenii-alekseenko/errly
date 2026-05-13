@@ -41,3 +41,10 @@ export type OpenDetailMessage = {
   type: 'open-detail';
   id: string;
 };
+
+// Request data URL of current tab screenshot. Background responds with the
+// PNG data URL; the caller (content script) writes to clipboard with a fresh
+// user-gesture-derived activation.
+export type CaptureScreenshotMessage = {
+  type: 'capture-screenshot';
+};

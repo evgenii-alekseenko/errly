@@ -1,6 +1,7 @@
 import { pushError } from '@/lib/storage';
 import { getSettings } from '@/lib/settings';
 import {
+  type CaptureScreenshotMessage,
   type ErrorRecord,
   type OpenDetailMessage,
   RUNTIME_MESSAGE_MARKER,
@@ -76,6 +77,16 @@ export default defineBackground(() => {
         url: browser.runtime.getURL(`/errors.html#/${encodeURIComponent(open.id)}`),
       });
       return;
+    }
+
+    const shot = message as CaptureScreenshotMessage | undefined;
+    if (shot?.type === 'capture-screenshot') {
+      // Capture in sender's window so toast-initiated shots photo the page
+      // where the toast appeared, not whatever the user focuses next.
+      const windowId = sender.tab?.windowId;
+      return windowId !== undefined
+        ? await browser.tabs.captureVisibleTab(windowId, { format: 'png' })
+        : await browser.tabs.captureVisibleTab({ format: 'png' });
     }
 
     const payload = message as RuntimePayload | undefined;

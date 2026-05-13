@@ -19,6 +19,7 @@ import {
 import { shouldShowRecord } from '@/lib/filter';
 import { ThemeApplier } from '@/lib/use-settings';
 import { networkLabel } from '@/lib/format';
+import { captureToClipboard } from '@/lib/screenshot';
 import type { ErrorRecord } from '@/lib/types';
 import './App.css';
 
@@ -221,6 +222,17 @@ function App() {
     browser.tabs.create({ url: browser.runtime.getURL('/demo.html') });
   };
 
+  const [shotCopied, setShotCopied] = useState(false);
+  const onScreenshot = async () => {
+    try {
+      await captureToClipboard();
+      setShotCopied(true);
+      setTimeout(() => setShotCopied(false), 1200);
+    } catch {
+      // chrome:// pages, restricted contexts, or denied clipboard.
+    }
+  };
+
   return (
     <div className="popup" data-monitoring={settings.monitoring ? 'on' : 'off'}>
       <ThemeApplier />
@@ -234,6 +246,15 @@ function App() {
       <div className="popup-actions">
         <button type="button" onClick={openHistory} data-testid="open-history">
           History ({errors.length})
+        </button>
+        <button
+          type="button"
+          onClick={onScreenshot}
+          data-testid="popup-screenshot"
+          className="secondary"
+          title="Copy screenshot of current tab to clipboard"
+        >
+          {shotCopied ? '✓ Copied' : 'Screenshot'}
         </button>
         <button type="button" onClick={openDemo} data-testid="open-demo" className="secondary">
           Demo
