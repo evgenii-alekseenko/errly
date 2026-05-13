@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Errly — Demo</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <main class="demo">
+      <h1>Errly — Demo</h1>
+      <p class="hint">
+        Enable monitoring in the popup, make this tab active, then click a button.
+        Each error should appear as a toast + in history.
+      </p>
+
+      <div id="status" class="status" data-testid="demo-status">
+        <span class="status-row">
+          monitoring:&nbsp;<b id="status-monitoring">…</b>
+        </span>
+        <span class="status-row">
+          captured this session:&nbsp;<b id="status-count">0</b>
+        </span>
+      </div>
+
+      <section class="group">
+        <h2>Network — HTTP errors</h2>
+        <button type="button" data-action="http-404">fetch 404 (httpbin)</button>
+        <button type="button" data-action="http-500">fetch 500 (httpbin)</button>
+        <p class="note">Uses httpbin.org — needs internet.</p>
+      </section>
+
+      <section class="group">
+        <h2>Network — connection-level</h2>
+        <button type="button" data-action="refused">connection refused (127.0.0.1:1)</button>
+        <button type="button" data-action="dns">DNS fail (.invalid TLD)</button>
+      </section>
+
+      <section class="group">
+        <h2>Runtime</h2>
+        <button type="button" data-action="throw">uncaught throw</button>
+        <button type="button" data-action="reject">unhandled promise rejection</button>
+      </section>
+
+      <section class="group">
+        <h2>Mixed</h2>
+        <button type="button" data-action="storm">fire all (sequential)</button>
+      </section>
+
+      <pre id="log" class="log" aria-live="polite"></pre>
+    </main>
+    <div id="toast-stack" class="toast-stack" data-testid="demo-toast-stack"></div>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

@@ -5,7 +5,9 @@ import { matchesType, shouldShowRecord, type TypeFilter } from '@/lib/filter';
 import { matchesSearch } from '@/lib/search';
 import { ThemeApplier } from '@/lib/use-settings';
 import { getRecordColor, networkLabel } from '@/lib/format';
+import { navigateToId, useHashId } from '@/lib/use-hash';
 import type { ErrorRecord } from '@/lib/types';
+import { Detail } from './Detail';
 import './App.css';
 
 const TYPE_OPTIONS: { value: TypeFilter; label: string }[] = [
@@ -18,11 +20,34 @@ function formatTimestamp(ts: number): string {
   return new Date(ts).toLocaleString();
 }
 
-function ErrorCard({ record, color }: { record: ErrorRecord; color: string }) {
+function ErrorCard({
+  record,
+  color,
+  onOpen,
+}: {
+  record: ErrorRecord;
+  color: string;
+  onOpen: () => void;
+}) {
   const style = { borderLeftColor: color, borderLeftWidth: '4px', borderLeftStyle: 'solid' as const };
+  const common = {
+    className: `card ${record.kind}`,
+    style,
+    onClick: onOpen,
+    'data-testid': 'error-card',
+    'data-kind': record.kind,
+    role: 'button' as const,
+    tabIndex: 0,
+    onKeyDown: (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        onOpen();
+      }
+    },
+  };
   if (record.kind === 'network') {
     return (
-      <article className="card network" style={style} data-testid="error-card" data-kind="network">
+      <article {...common}>
         <header>
           <span className="badge status" title={record.errorText}>{networkLabel(record)}</span>
           <span className="badge method">{record.method}</span>
@@ -33,19 +58,13 @@ function ErrorCard({ record, color }: { record: ErrorRecord; color: string }) {
     );
   }
   return (
-    <article className="card runtime" style={style} data-testid="error-card" data-kind="runtime">
+    <article {...common}>
       <header>
         <span className="badge status">ERR</span>
         <span className="badge source">{record.source}</span>
         <span className="time">{formatTimestamp(record.timestamp)}</span>
       </header>
       <p className="message">{record.message}</p>
-      {record.stack && (
-        <details className="stack">
-          <summary>Stack trace</summary>
-          <pre>{record.stack}</pre>
-        </details>
-      )}
     </article>
   );
 }
@@ -55,6 +74,7 @@ function App() {
   const [settings, setLocalSettings] = useState<Settings>(DEFAULT_SETTINGS);
   const [query, setQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState<TypeFilter>('all');
+  const activeId = useHashId();
 
   useEffect(() => {
     getErrors().then(setErrors);
@@ -72,7 +92,43 @@ function App() {
       matchesType(e, typeFilter) &&
       matchesSearch(e, query),
   );
+  const displayed = [...visible].reverse();
   const hidden = errors.length - visible.length;
+
+  if (activeId) {
+    const detailRecord = errors.find((e) => e.id === activeId);
+    return (
+      <div className="history">
+        <ThemeApplier />
+        {detailRecord ? (
+          (() => {
+            const idx = displayed.findIndex((e) => e.id === activeId);
+            const prevId = idx > 0 ? displayed[idx - 1].id : null;
+            const nextId = idx >= 0 && idx < displayed.length - 1 ? displayed[idx + 1].id : null;
+            return (
+              <Detail
+                record={detailRecord}
+                prevId={prevId}
+                nextId={nextId}
+                codeColors={settings.codeColors}
+              />
+            );
+          })()
+        ) : (
+          <div className="detail">
+            <header className="detail-header">
+              <button type="button" onClick={() => navigateToId(null)} data-testid="back">
+                ← Back
+              </button>
+            </header>
+            <p className="empty" data-testid="detail-not-found">
+              Error not found (id: <code>{activeId}</code>).
+            </p>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="history">
@@ -124,9 +180,13 @@ function App() {
         <p className="empty" data-testid="all-filtered">All errors filtered out.</p>
       ) : (
         <ul className="card-list">
-          {[...visible].reverse().map((e) => (
+          {displayed.map((e) => (
             <li key={e.id}>
-              <ErrorCard record={e} color={getRecordColor(e, settings.codeColors)} />
+              <ErrorCard
+                record={e}
+                color={getRecordColor(e, settings.codeColors)}
+                onOpen={() => navigateToId(e.id)}
+              />
             </li>
           ))}
         </ul>

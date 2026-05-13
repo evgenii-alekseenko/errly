@@ -104,9 +104,11 @@ entrypoints/
     Toast.tsx                      #   ToastQueue component (subscribes to toast-store)
     style.css
   popup/                           # action popup
-  errors/                          # /errors.html — full page.
+  errors/                          # /errors.html — list + detail (hash routing).
                                    # Folder NOT named `history/` — WXT auto-maps
                                    # that to chrome_url_overrides.history.
+    Detail.tsx                     #   single-record view + prev/next + copy JSON/curl
+  demo/                            # /demo.html — buttons to trigger every error type
 
 lib/
   types.ts                         # NetworkError (statusCode 0 + errorText for net-level)
@@ -118,6 +120,8 @@ lib/
   format.ts                        # pure: networkLabel, getRecordColor
   filter.ts                        # pure: shouldShowRecord (codeFilters) + matchesType
   search.ts                        # pure: matchesSearch (live history search)
+  curl.ts                          # pure: buildCurl (method + url → shell string)
+  use-hash.ts                      # parseHashId (pure) + useHashId/navigateToId
   settings.ts                      # Settings (monitoring, theme, position,
                                    # codeFilters, codeColors)
                                    # withDefaults merge for forward-compat reads
@@ -154,6 +158,7 @@ tests/
 - MAIN-world content script can't use `browser.*` API — communicates with ISOLATED bridge via `window.postMessage` + magic marker (`RUNTIME_MESSAGE_MARKER`).
 - Background notifies originating tab via `tabs.sendMessage(tabId, ShowToastMessage)` after `pushError`. Wrapped in try/catch — chrome:// and similar tabs have no content script.
 - Content scripts needing message listeners during page load **must register `runtime.onMessage` synchronously in `main()`** before any async (shadow-root mount). Otherwise messages from page-load network fetches are lost. Buffer via module-level pub/sub (see `lib/toast-store.ts`).
+- Background `runtime.onMessage` is a small router: `OpenDetailMessage` (from toast click) → `tabs.create(errors.html#/:id)`; `RuntimePayload` (from runtime-bridge or demo page) → `pushError` after monitoring + activeTab gate.
 
 ### UI
 - Controlled inputs that write to async storage need **optimistic local update** in `onChange` (storage.watch is too slow for Playwright's `.check()` polling).
@@ -164,6 +169,8 @@ tests/
 - Settings reads merge `DEFAULT_SETTINGS` via `withDefaults` to stay forward-compat when new fields land in later slices.
 - Colors: user-pickable per code (9 codes); applied as inline `borderLeftColor` on toast + history card. Defaults: 4XX amber, 5XX red, runtime amber, other grey (status 0 included). Constants live in `lib/colors.ts` — pure module, no WXT dep, so Jest can import without polyfilling `storage`.
 - History search + type filter live in **local React state** (not settings) — ephemeral ad-hoc lookup, resets on page reopen. Search hits URL+method+statusCode+errorText for network, message+source+stack for runtime. Type filter is a 3-button segmented control (All/Network/Runtime), `aria-pressed` for active.
+- History uses **hash routing** (`#/` list, `#/:id` detail) — manual via `useHashId`, no router dep. Deep-linkable: toast sends `OpenDetailMessage` to background → `tabs.create` (content-script `window.open` on chrome-extension:// from a regular page lands on `chrome-error://`). Prev/next walk the current filtered+displayed list (newest-first), so navigation respects active filters.
+- **Demo page** (`/demo.html`, "Demo" button in popup) has buttons for every captured error type — 404/500 via httpbin, refused (`127.0.0.1:1`), DNS-fail (`.invalid`), throw, reject, "fire all". Since `<all_urls>` content scripts don't inject into extension pages, the demo (a) bridges its own `error`/`unhandledrejection` to background via `runtime.sendMessage` with `RuntimePayload`, and (b) listens to `ShowToastMessage` itself and renders vanilla-DOM toasts (no shadow root needed, demo owns the page). Page also shows live `monitoring:` + session-capture count for quick "why isn't this firing" diagnosis.
 
 ### E2E
 - `headless: false`, `slowMo: 800`, final `waitForTimeout(2-3s)` so changes are observable.
@@ -182,7 +189,8 @@ tests/
 7a. ✅ Code filters (groups + 9 codes) — display-only, runtime always shown
 7b. ✅ Per-code color picker → toast + history card left-border stripe
 7c. ✅ Search-text + type filter in history (live, local state)
-8. Detail page (introduces ReactRouter)
+8a. ✅ Detail page (hash routing, prev/next, copy JSON, copy curl) — toast click deep-links
+8b. Capture req/resp headers + response status meta (`onBeforeSendHeaders`, `onHeadersReceived`, `extraHeaders`)
 9. Screenshot / test-error / copy-last buttons
 10. Report templates (JSON + Jira URL, Strategy pattern)
 11. DevTools panel

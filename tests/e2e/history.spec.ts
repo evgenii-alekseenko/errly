@@ -42,7 +42,7 @@ test('history page shows captured errors and clears on demand', async () => {
   await history.waitForTimeout(2000);
 });
 
-test('runtime stack trace expands via details', async () => {
+test('runtime card opens detail with stack', async () => {
   const page = await context.newPage();
   await page.goto('http://localhost:3210/throw.html');
   await page.waitForTimeout(200);
@@ -55,10 +55,12 @@ test('runtime stack trace expands via details', async () => {
     .filter({ hasText: 'boom-from-throw' });
   await expect(runtimeCard).toBeVisible({ timeout: 15000 });
 
-  const stackDetails = runtimeCard.locator('details.stack');
-  await expect(stackDetails).toBeVisible();
-  await stackDetails.locator('summary').click();
-  await expect(stackDetails.locator('pre')).toBeVisible();
+  await runtimeCard.click();
+
+  const detail = history.locator('[data-testid="detail"][data-kind="runtime"]');
+  await expect(detail).toBeVisible();
+  await expect(detail).toContainText('boom-from-throw');
+  await expect(detail.locator('.stack-pre')).toBeVisible();
 
   await history.waitForTimeout(2000);
 });

@@ -217,6 +217,10 @@ function App() {
     browser.tabs.create({ url: browser.runtime.getURL('/errors.html') });
   };
 
+  const openDemo = () => {
+    browser.tabs.create({ url: browser.runtime.getURL('/demo.html') });
+  };
+
   return (
     <div className="popup" data-monitoring={settings.monitoring ? 'on' : 'off'}>
       <ThemeApplier />
@@ -230,6 +234,9 @@ function App() {
       <div className="popup-actions">
         <button type="button" onClick={openHistory} data-testid="open-history">
           History ({errors.length})
+        </button>
+        <button type="button" onClick={openDemo} data-testid="open-demo" className="secondary">
+          Demo
         </button>
       </div>
       {!settings.monitoring && (

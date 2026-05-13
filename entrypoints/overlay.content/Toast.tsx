@@ -6,15 +6,37 @@ import {
   getSettings,
   watchSettings,
 } from '@/lib/settings';
-import type { ErrorRecord } from '@/lib/types';
+import type { ErrorRecord, OpenDetailMessage } from '@/lib/types';
 import { subscribe } from '@/lib/toast-store';
 import { getRecordColor, networkLabel } from '@/lib/format';
 
+function openDetail(id: string) {
+  const msg: OpenDetailMessage = { type: 'open-detail', id };
+  void browser.runtime.sendMessage(msg).catch(() => {});
+}
+
 function ToastCard({ record, color }: { record: ErrorRecord; color: string }) {
   const style = { borderLeftColor: color };
+  const onClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    openDetail(record.id);
+  };
+  const onKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      openDetail(record.id);
+    }
+  };
+  const common = {
+    role: 'button' as const,
+    tabIndex: 0,
+    onClick,
+    onKeyDown,
+    'data-testid': 'toast',
+  };
   if (record.kind === 'network') {
     return (
-      <div className="toast network" style={style} data-testid="toast" data-kind="network">
+      <div className="toast network" style={style} data-kind="network" {...common}>
         <span className="label" title={record.errorText}>{networkLabel(record)}</span>
         <div className="body">
           <div className="title">{record.method} {record.url}</div>
@@ -24,7 +46,7 @@ function ToastCard({ record, color }: { record: ErrorRecord; color: string }) {
     );
   }
   return (
-    <div className="toast runtime" style={style} data-testid="toast" data-kind="runtime">
+    <div className="toast runtime" style={style} data-kind="runtime" {...common}>
       <span className="label">ERR</span>
       <div className="body">
         <div className="title">{record.message}</div>

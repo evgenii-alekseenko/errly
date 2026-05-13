@@ -2,6 +2,7 @@ import { pushError } from '@/lib/storage';
 import { getSettings } from '@/lib/settings';
 import {
   type ErrorRecord,
+  type OpenDetailMessage,
   RUNTIME_MESSAGE_MARKER,
   type RuntimePayload,
   type ShowToastMessage,
@@ -69,6 +70,14 @@ export default defineBackground(() => {
   );
 
   browser.runtime.onMessage.addListener(async (message, sender) => {
+    const open = message as OpenDetailMessage | undefined;
+    if (open?.type === 'open-detail' && open.id) {
+      await browser.tabs.create({
+        url: browser.runtime.getURL(`/errors.html#/${encodeURIComponent(open.id)}`),
+      });
+      return;
+    }
+
     const payload = message as RuntimePayload | undefined;
     if (!payload || payload.marker !== RUNTIME_MESSAGE_MARKER) return;
     if (!(await getSettings()).monitoring) return;

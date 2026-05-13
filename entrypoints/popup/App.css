@@ -48,6 +48,11 @@
   background: var(--button-hover);
 }
 
+.popup-actions button.secondary {
+  flex: 0 0 auto;
+  color: var(--fg-muted);
+}
+
 .section {
   margin-top: 12px;
   padding-top: 8px;

@@ -36,3 +36,8 @@ export type ShowToastMessage = {
   type: 'show-toast';
   record: ErrorRecord;
 };
+
+export type OpenDetailMessage = {
+  type: 'open-detail';
+  id: string;
+};
