@@ -21,7 +21,7 @@ test('toast appears on the page where the error happened', async () => {
   await page.goto('http://localhost:3210/error.html');
   await page.waitForLoadState('networkidle');
 
-  const host = page.locator('error-logger-toast');
+  const host = page.locator('errly-toast');
   await expect(host).toBeAttached({ timeout: 5000 });
 
   const toast = host.locator('[data-testid="toast"]').filter({ hasText: '/missing' });
@@ -37,7 +37,7 @@ test('toast auto-dismisses after timeout', async () => {
   await page.goto('http://localhost:3210/error.html');
   await page.waitForLoadState('networkidle');
 
-  const host = page.locator('error-logger-toast');
+  const host = page.locator('errly-toast');
   const toast = host.locator('[data-testid="toast"]').filter({ hasText: '/missing' });
   await expect(toast).toBeVisible({ timeout: 5000 });
 
@@ -49,7 +49,7 @@ test('runtime error produces a toast on the page', async () => {
   await page.goto('http://localhost:3210/throw.html');
   await page.waitForTimeout(500);
 
-  const host = page.locator('error-logger-toast');
+  const host = page.locator('errly-toast');
   const toast = host
     .locator('[data-testid="toast"][data-kind="runtime"]')
     .filter({ hasText: 'boom-from-throw' });

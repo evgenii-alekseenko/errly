@@ -39,7 +39,7 @@ test('changing notification position moves the toast stack', async () => {
   await page.goto('http://localhost:3210/error.html');
   await page.waitForLoadState('networkidle');
 
-  const host = page.locator('error-logger-toast');
+  const host = page.locator('errly-toast');
   const stack = host.locator('[data-testid="toast-stack"]');
   await expect(stack).toHaveAttribute('data-position', 'top-left', { timeout: 5000 });
 

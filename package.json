@@ -1,6 +1,6 @@
 {
-  "name": "error-logger",
-  "description": "Passive logger for network and runtime errors",
+  "name": "errly",
+  "description": "Pass-through error logger — catches HTTP failures and JS exceptions in the background, surfaces them as color-coded toasts with a searchable history.",
   "private": true,
   "version": "0.0.0",
   "type": "module",

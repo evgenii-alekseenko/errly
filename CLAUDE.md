@@ -1,6 +1,6 @@
-# Error Logger Extension
+# Errly
 
-Chrome/Firefox extension. Passive logger for network + runtime errors.
+Chrome/Firefox extension. Pass-through error logger — catches HTTP failures and JS exceptions, surfaces as color-coded toasts with searchable history.
 
 ## Stack
 

@@ -32,7 +32,7 @@ test('custom color for 404 paints toast left border', async () => {
   await page.goto('http://localhost:3210/error.html');
   await page.waitForLoadState('networkidle');
 
-  const host = page.locator('error-logger-toast');
+  const host = page.locator('errly-toast');
   const toast = host.locator('[data-testid="toast"]').filter({ hasText: '/missing' });
   await expect(toast).toBeVisible({ timeout: 5000 });
   await expect(toast).toHaveCSS('border-left-color', 'rgb(0, 255, 0)');

@@ -221,7 +221,7 @@ function App() {
     <div className="popup" data-monitoring={settings.monitoring ? 'on' : 'off'}>
       <ThemeApplier />
       <header className="popup-header">
-        <h1>Error Logger</h1>
+        <h1>Errly</h1>
         <MonitoringToggle
           value={settings.monitoring}
           onChange={(monitoring) => update({ monitoring })}

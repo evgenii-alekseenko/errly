@@ -15,7 +15,7 @@ export default defineContentScript({
     });
 
     const ui = await createShadowRootUi(ctx, {
-      name: 'error-logger-toast',
+      name: 'errly-toast',
       position: 'overlay',
       alignment: 'bottom-right',
       zIndex: 2_147_483_647,
